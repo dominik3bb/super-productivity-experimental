@@ -478,7 +478,9 @@ export class WorkContextService {
   ]).pipe(
     map(([tasks, isTodayList]) =>
       (isTodayList ? this._filterFutureScheduledTasksForToday(tasks) : tasks).filter(
-        (task) => task && !task.isDone,
+        // Abandoned tasks are "closed" — kept out of the active list alongside
+        // completed ones (they surface in the Done/closed section instead).
+        (task) => task && !task.isDone && !task.abandonedOn,
       ),
     ),
   );
@@ -488,8 +490,13 @@ export class WorkContextService {
       isToday ? this._store$.select(selectAllTasksWithSubTasks) : this.mainListTasks$,
     ),
     // Show completed tasks newest-first (by completion time) so the task you
-    // just finished is at the top of the Done list.
-    map((tasks) => sortDoneTasksByDoneDate(tasks.filter((task) => task && task.isDone))),
+    // just finished is at the top of the Done list. Abandoned tasks are shown
+    // here too (faded) so the backlog stays clean without losing history.
+    map((tasks) =>
+      sortDoneTasksByDoneDate(
+        tasks.filter((task) => task && (task.isDone || !!task.abandonedOn)),
+      ),
+    ),
   );
 
   constructor() {

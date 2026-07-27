@@ -156,6 +156,23 @@
     </button>
   }
 
+  <button
+    (click)="toggleTaskAbandoned()"
+    mat-menu-item
+  >
+    <span class="menuItemLeft">
+      @if (task.abandonedOn) {
+        <mat-icon>undo</mat-icon>
+      } @else {
+        <mat-icon>block</mat-icon>
+      }
+      {{
+        (task.abandonedOn ? T.F.TASK.CMP.RESTORE_ABANDONED : T.F.TASK.CMP.ABANDON)
+          | translate
+      }}
+    </span>
+  </button>
+
   @if (isAdvancedControls() && !task.parentId && !task.isDone) {
     <button
       (click)="moveToTop()"

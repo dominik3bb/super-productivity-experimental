@@ -96,6 +96,10 @@ export class TaskRelatedModelEffects {
             id: taskId,
             changes: {
               isDone: false,
+              // Dragging out of the Done/closed section back into the active
+              // list also restores an abandoned task. `null` (not `undefined`)
+              // so the clear is serialized into the op-log for other clients.
+              abandonedOn: null,
             },
           },
         }),

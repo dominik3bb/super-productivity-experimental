@@ -534,6 +534,14 @@ export class TaskContextMenuInnerComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  toggleTaskAbandoned(): void {
+    if (this.task.abandonedOn) {
+      this._taskService.unsetAbandoned(this.task.id);
+    } else {
+      this._taskService.setAbandoned(this.task.id);
+    }
+  }
+
   addToMyDay(): void {
     this._store.dispatch(
       TaskSharedActions.planTasksForToday({

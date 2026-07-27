@@ -242,4 +242,15 @@
       text-decoration: line-through;
     }
   }
+
+  // Abandoned: faded and de-saturated, no strikethrough — signals the task
+  // "faded from the active timeline" without the finality of completion.
+  @include isAbandonedForFirstLine {
+    opacity: var(--task-is-done-dim-opacity);
+
+    ::ng-deep .display-value {
+      font-style: italic;
+      text-decoration: none;
+    }
+  }
 }

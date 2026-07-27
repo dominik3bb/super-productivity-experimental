@@ -355,8 +355,13 @@ export const selectUndoneTodayTaskIds = createSelector(
   selectTodayTaskIds,
   selectTaskFeatureState,
   (todayTaskIds, taskState): string[] => {
-    // selectTodayTaskIds already uses board-style pattern
-    return todayTaskIds.filter((taskId) => taskState.entities[taskId]?.isDone === false);
+    // selectTodayTaskIds already uses board-style pattern.
+    // Abandoned tasks are "closed" (resolved, not pending), so they are excluded
+    // from the undone set alongside completed ones.
+    return todayTaskIds.filter((taskId) => {
+      const task = taskState.entities[taskId];
+      return task?.isDone === false && !task.abandonedOn;
+    });
   },
 );
 

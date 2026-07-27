@@ -134,7 +134,12 @@ export const updateDoneOnForTask = (upd: Update<Task>, state: TaskState): TaskSt
     const doneOn =
       typeof upd.changes.doneOn === 'number' ? upd.changes.doneOn : Date.now();
     const changes = {
-      ...(isToDone ? { doneOn } : {}),
+      // Completion and abandonment are mutually exclusive terminal states, so
+      // marking a task done clears any prior `abandonedOn`. Derived here (not
+      // carried in the op payload) so it replays deterministically on every
+      // client. `null` rather than `undefined` so the clear survives
+      // serialization when applied via a direct field update elsewhere.
+      ...(isToDone ? { doneOn, abandonedOn: null } : {}),
       ...(isToUnDone ? { doneOn: undefined } : {}),
     };
     return taskAdapter.updateOne(

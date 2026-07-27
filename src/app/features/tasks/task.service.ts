@@ -1231,6 +1231,28 @@ export class TaskService {
   }
 
   /**
+   * Mark a task as "abandoned" — a terminal state distinct from completion
+   * (discussion #6620). Keeps `isDone: false` so it is never counted as done,
+   * but removes it from the active list. A tracked/current task is stopped
+   * first so an abandoned task never remains the running task.
+   */
+  setAbandoned(id: string): void {
+    if (this.currentTaskId() === id) {
+      this._store.dispatch(unsetCurrentTask());
+    }
+    this.update(id, { abandonedOn: Date.now(), isDone: false });
+  }
+
+  /**
+   * Restore an abandoned task back to the active list. Clears with `null` (not
+   * `undefined`) so the cleared value is serialized into the op-log and replays
+   * on every synced client.
+   */
+  unsetAbandoned(id: string): void {
+    this.update(id, { abandonedOn: null });
+  }
+
+  /**
    * Toggle done state with checkmark animation.
    * Returns the timeout handle so callers can clear it on destroy.
    */

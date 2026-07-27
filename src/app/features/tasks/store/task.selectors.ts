@@ -128,7 +128,10 @@ export const selectStartableTasks = createSelector(
       .map((id) => s.entities[id])
       .filter(
         (task): task is Task =>
-          !!task && !task.isDone && (!!task.parentId || task.subTaskIds.length === 0),
+          !!task &&
+          !task.isDone &&
+          !task.abandonedOn &&
+          (!!task.parentId || task.subTaskIds.length === 0),
       );
   },
 );

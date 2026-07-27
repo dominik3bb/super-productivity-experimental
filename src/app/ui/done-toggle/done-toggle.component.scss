@@ -79,6 +79,25 @@ $check-len: 18;
     transition: opacity var(--transition-duration-m) var(--ani-standard-timing);
   }
 
+  .abandoned-mark {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    opacity: 0.5;
+    transition: opacity var(--transition-duration-m) var(--ani-standard-timing);
+  }
+
+  &.is-abandoned {
+    .done-shape {
+      opacity: 0.4;
+    }
+  }
+
+  &:hover.is-abandoned .abandoned-mark {
+    opacity: 0.8;
+  }
+
   &.is-done {
     .done-shape {
       opacity: 0.5;

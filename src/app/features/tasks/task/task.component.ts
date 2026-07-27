@@ -136,6 +136,7 @@ import { getSubTaskTimeLeftForDisplay } from '../util/get-sub-task-time-left-for
     '[attr.data-task-id]': 'task().id',
     '[tabindex]': '0',
     '[class.isDone]': 'task().isDone',
+    '[class.isAbandoned]': '!!task().abandonedOn',
     '[class.isCurrent]': 'isCurrent()',
     '[class.isSelected]': 'isSelected()',
     '[class.hasNoSubTasks]': 'task().subTaskIds.length === 0',
@@ -1011,12 +1012,24 @@ export class TaskComponent implements OnDestroy, AfterViewInit {
 
   toggleTaskDone(): void {
     window.clearTimeout(this._doneAnimationTimeout);
+    // An abandoned task lives in the Done/closed section; toggling it simply
+    // restores it to the active list (there is no "abandoned checkmark" state).
+    if (this.task().abandonedOn) {
+      this.focusNext(true, true);
+      this._taskService.unsetAbandoned(this.task().id);
+      return;
+    }
     this.focusNext(true, true);
     this._doneAnimationTimeout = this._taskService.toggleDoneWithAnimation(
       this.task().id,
       this.task().isDone,
       (v) => this.showDoneAnimation.set(v),
     );
+  }
+
+  abandonTask(): void {
+    this.focusNext(true, true);
+    this._taskService.setAbandoned(this.task().id);
   }
 
   showDetailPanel(): void {

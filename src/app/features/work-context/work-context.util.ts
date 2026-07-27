@@ -7,7 +7,9 @@ import { TaskWithSubTasks } from '../tasks/task.model';
  * without a `doneOn` timestamp sort last.
  */
 export const sortDoneTasksByDoneDate = (tasks: TaskWithSubTasks[]): TaskWithSubTasks[] =>
-  [...tasks].sort((a, b) => (b.doneOn ?? 0) - (a.doneOn ?? 0));
+  [...tasks].sort(
+    (a, b) => (b.doneOn ?? b.abandonedOn ?? 0) - (a.doneOn ?? a.abandonedOn ?? 0),
+  );
 
 export const mapEstimateRemainingFromTasks = (tasks: TaskWithSubTasks[]): number =>
   tasks &&
@@ -23,13 +25,14 @@ export const mapEstimateRemainingFromTasks = (tasks: TaskWithSubTasks[]): number
           return subAcc;
         }
         const estimateRemainingSub = +subTask.timeEstimate - +subTask.timeSpent;
-        const isTrackValSub = estimateRemainingSub > 0 && !subTask.isDone;
+        const isTrackValSub =
+          estimateRemainingSub > 0 && !subTask.isDone && !subTask.abandonedOn;
         return subAcc + (isTrackValSub ? estimateRemainingSub : 0);
       }, 0);
     } else {
       estimateRemaining = +task.timeEstimate - +task.timeSpent;
     }
-    const isTrackVal = estimateRemaining > 0 && !task.isDone;
+    const isTrackVal = estimateRemaining > 0 && !task.isDone && !task.abandonedOn;
     return acc + (isTrackVal ? estimateRemaining : 0);
   }, 0);
 
@@ -40,9 +43,10 @@ export const hasTasksToWorkOn = (tasks: TaskWithSubTasks[]): boolean => {
     }
     return (
       !t.isDone &&
+      !t.abandonedOn &&
       (!t.subTasks ||
         t.subTasks.length === 0 ||
-        t.subTasks.filter((st) => st && !st.isDone).length > 0)
+        t.subTasks.filter((st) => st && !st.isDone && !st.abandonedOn).length > 0)
     );
   });
   return _tasksToWorkOn && _tasksToWorkOn.length > 0;

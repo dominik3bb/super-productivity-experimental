@@ -136,6 +136,21 @@ export interface TaskCopy
   // Ensure type compatibility for internal fields
   modified?: number;
   doneOn?: number;
+
+  /**
+   * Timestamp (Unix ms) at which the task was marked "abandoned" — a terminal
+   * state distinct from completion (see discussion #6620). Orthogonal to
+   * `isDone`: an abandoned task keeps `isDone: false` so it is never counted as
+   * completed, but is treated as "closed" (removed from the active list, shown
+   * faded in the Done/closed section).
+   *
+   * Optional + nullable by design so it is sync-safe: existing installs lack the
+   * field (no schema bump needed), and clearing it uses `null` (not `undefined`)
+   * so the cleared value survives op-log serialization and replays on every
+   * client. Mutually exclusive with `isDone === true` (marking a task done
+   * clears `abandonedOn`).
+   */
+  abandonedOn?: number | null;
   parentId?: string;
   remindAt?: number;
   repeatCfgId?: string;

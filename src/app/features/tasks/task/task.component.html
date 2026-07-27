@@ -21,6 +21,7 @@
       >
         <done-toggle
           [isDone]="t.isDone"
+          [isAbandoned]="!!t.abandonedOn"
           [isCurrent]="isCurrent()"
           [showDoneAnimation]="showDoneAnimation()"
           [showUndoneAnimation]="showUndoneAnimation()"

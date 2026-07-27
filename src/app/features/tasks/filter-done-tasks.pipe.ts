@@ -8,7 +8,7 @@ export const filterDoneTasks = (
   isFilterAll: boolean,
 ): TaskWithSubTasks[] => {
   return isFilterDone
-    ? tasks.filter((task) => !task.isDone)
+    ? tasks.filter((task) => !task.isDone && !task.abandonedOn)
     : isFilterAll
       ? !!currentTaskId
         ? tasks.filter((task) => task.id === currentTaskId)

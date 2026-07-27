@@ -72,6 +72,26 @@ describe('task.reducer.util', () => {
 
       expect(result.entities['task-1']!.doneOn).toBeUndefined();
     });
+
+    it('should clear abandonedOn when task is marked done (mutually exclusive)', () => {
+      const state = createState([createTask('task-1', { abandonedOn: 555 })]);
+      const upd: Update<Task> = { id: 'task-1', changes: { isDone: true } };
+
+      const result = updateDoneOnForTask(upd, state);
+
+      // null (not undefined) so the clear serializes into the op-log and
+      // replays on every synced client.
+      expect(result.entities['task-1']!.abandonedOn).toBeNull();
+    });
+
+    it('should not touch abandonedOn when only time fields change', () => {
+      const state = createState([createTask('task-1', { abandonedOn: 555 })]);
+      const upd: Update<Task> = { id: 'task-1', changes: { timeEstimate: 1000 } };
+
+      const result = updateDoneOnForTask(upd, state);
+
+      expect(result.entities['task-1']!.abandonedOn).toBe(555);
+    });
   });
 
   describe('updateStartDateForRepeatableTask', () => {

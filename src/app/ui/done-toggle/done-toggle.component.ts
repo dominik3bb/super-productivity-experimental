@@ -15,7 +15,9 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
     role: 'checkbox',
     '[attr.aria-checked]': 'isDone()',
     tabindex: '0',
-    '[class.is-done]': '(showDoneAnimation() || isDone()) && !showUndoneAnimation()',
+    '[class.is-done]':
+      '(showDoneAnimation() || isDone()) && !showUndoneAnimation() && !isAbandoned()',
+    '[class.is-abandoned]': 'isAbandoned()',
     '[class.is-current]': 'isCurrent()',
     '[class.is-scale-up]': 'showDoneAnimation() || showUndoneAnimation()',
   },
@@ -23,6 +25,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 })
 export class DoneToggleComponent {
   readonly isDone = input.required<boolean>();
+  readonly isAbandoned = input<boolean>(false);
   readonly isCurrent = input<boolean>(false);
   readonly showDoneAnimation = input<boolean>(false);
   readonly showUndoneAnimation = input<boolean>(false);
