@@ -1818,7 +1818,16 @@
         "SCHEDULE_TASK": "Schedule Task",
         "SUB_TASKS": "Subtasks ({{nr}})",
         "TIME": "Duration",
-        "TITLE_PLACEHOLDER": "Enter a title"
+        "TITLE_PLACEHOLDER": "Enter a title",
+        "HISTORY": "History ({{nr}})",
+        "HISTORY_TASK_CREATED": "Task created \"{{title}}\"",
+        "HISTORY_TITLE_CHANGED": "Title changed \"{{title}}\"",
+        "HISTORY_NOTES_UPDATED": "Notes updated",
+        "HISTORY_SUBTASK_ADDED": "Subtask added: {{title}}",
+        "HISTORY_SUBTASK_REMOVED": "Subtask removed: {{title}}",
+        "HISTORY_SUBTASK_RENAMED": "Subtask renamed: {{title}}",
+        "HISTORY_RESTORE": "Restore",
+        "HISTORY_RESTORE_NOTES_CONFIRM": "Replace the current notes with this previous version?"
       },
       "B": {
         "ADD_ALL_TO_TODAY": "Add all to today",

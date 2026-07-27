@@ -1,0 +1,123 @@
+<ol class="history-timeline">
+  @for (
+    entry of timeline();
+    track entry.revision.id;
+    let idx = $index;
+    let last = $last
+  ) {
+    <li
+      class="history-milestone"
+      [class.is-latest]="idx === 0"
+    >
+      <div
+        class="rail"
+        aria-hidden="true"
+      >
+        <span
+          class="dot"
+          [class.is-open]="idx === 0"
+        ></span>
+        @if (!last) {
+          <span class="line"></span>
+        }
+      </div>
+
+      <div class="body">
+        <button
+          type="button"
+          class="history-row"
+          [class.is-static]="!canExpand(entry)"
+          (click)="toggleExpand(entry)"
+          [attr.aria-expanded]="canExpand(entry) ? isExpanded(entry) : null"
+        >
+          <span class="history-label">
+            @switch (entry.revision.kind) {
+              @case ('created') {
+                {{
+                  labelKey(entry.revision)
+                    | translate: { title: entry.displayTitle || '…' }
+                }}
+              }
+              @case ('title') {
+                {{
+                  labelKey(entry.revision)
+                    | translate: { title: entry.displayTitle || '…' }
+                }}
+              }
+              @case ('subtaskAdded') {
+                {{
+                  labelKey(entry.revision)
+                    | translate: { title: entry.displayTitle || '…' }
+                }}
+              }
+              @case ('subtaskRemoved') {
+                {{
+                  labelKey(entry.revision)
+                    | translate: { title: entry.displayTitle || '…' }
+                }}
+              }
+              @case ('subtaskRenamed') {
+                {{
+                  labelKey(entry.revision)
+                    | translate: { title: entry.displayTitle || '…' }
+                }}
+              }
+              @default {
+                {{ labelKey(entry.revision) | translate }}
+              }
+            }
+          </span>
+          <span
+            class="history-time"
+            [title]="entry.revision.created | localeDate: 'medium'"
+          >
+            {{ entry.revision.created | localeDate: 'short' }}
+          </span>
+          @if (canExpand(entry)) {
+            <mat-icon class="expand-icon">{{
+              isExpanded(entry) ? 'expand_less' : 'expand_more'
+            }}</mat-icon>
+          }
+        </button>
+
+        @if (
+          entry.revision.kind === 'notes' &&
+          entry.displayNotesPreview &&
+          !isExpanded(entry)
+        ) {
+          <p class="notes-preview">{{ entry.displayNotesPreview }}</p>
+        }
+
+        @if (isExpanded(entry)) {
+          <div class="history-preview">
+            @if (entry.revision.kind === 'notes') {
+              <inline-markdown
+                [model]="entry.revision.notes || ''"
+                [isLock]="true"
+                [isShowControls]="false"
+              ></inline-markdown>
+            } @else if (entry.revision.kind === 'subtaskRenamed') {
+              <p class="title-preview muted">
+                {{ entry.revision.previousSubTaskTitle || '…' }}
+                →
+                {{ entry.revision.subTaskTitle || '…' }}
+              </p>
+            }
+          </div>
+        }
+
+        @if (isRestorable(entry.revision) && !entry.isSynthetic) {
+          <button
+            type="button"
+            mat-button
+            class="restore-btn"
+            (click)="restore(entry.revision)"
+          >
+            <mat-icon>history</mat-icon>
+            <span>{{ T.F.TASK.ADDITIONAL_INFO.HISTORY_RESTORE | translate }}</span>
+          </button>
+        }
+      </div>
+    </li>
+  }
+</ol>

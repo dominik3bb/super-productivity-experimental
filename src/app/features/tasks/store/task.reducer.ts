@@ -39,6 +39,8 @@ import {
   deleteTaskAttachment,
   updateTaskAttachment,
 } from '../task-attachment/task-attachment.actions';
+import { addTaskRevision } from '../task-history/task-history.actions';
+import { appendTaskRevision } from '../task-history/task-history.util';
 import { Update } from '@ngrx/entity';
 import { unique } from '../../../util/unique';
 import { roundDurationVanilla } from '../../../util/round-duration';
@@ -665,6 +667,23 @@ export const taskReducer = createReducer<TaskState>(
           attachments: getTaskById(taskId, state).attachments.filter(
             (at) => at.id !== id,
           ),
+        },
+      },
+      state,
+    );
+  }),
+
+  // TASK HISTORY — capped revisions nested on the task (discussion #6620)
+  on(addTaskRevision, (state, { taskId, revision }) => {
+    const task = state.entities[taskId];
+    if (!task) {
+      return state;
+    }
+    return taskAdapter.updateOne(
+      {
+        id: taskId,
+        changes: {
+          revisions: appendTaskRevision(task.revisions, revision),
         },
       },
       state,

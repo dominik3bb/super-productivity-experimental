@@ -106,6 +106,7 @@ import { DeletedTaskIssueSidecarService } from '../issue/two-way-sync/deleted-ta
 import { TimeBlockDeleteSidecarService } from '../calendar-integration/time-block/time-block-delete-sidecar.service';
 import { getDeadlineAutoPlanFields } from './util/get-deadline-auto-plan-fields';
 import { TaskTimeSyncService } from './task-time-sync.service';
+import { TaskHistoryService } from './task-history/task-history.service';
 
 @Injectable({
   providedIn: 'root',
@@ -125,6 +126,7 @@ export class TaskService {
   private readonly _timeBlockDeleteSidecar = inject(TimeBlockDeleteSidecarService);
   private readonly _archiveTaskPromisesById = new Map<string, Promise<void>>();
   private readonly _taskTimeSync = inject(TaskTimeSyncService);
+  private readonly _taskHistory = inject(TaskHistoryService);
 
   currentTaskId$: Observable<string | null> = this._store.pipe(
     select(selectCurrentTaskId),
@@ -480,6 +482,9 @@ export class TaskService {
     // Clear via subTaskIds (always present) not subTasks: the keyboard-delete path
     // passes a raw Task entity whose subTasks array is undefined (see #9280).
     task.subTaskIds.forEach((id) => this._taskTimeSync.clearOne(id));
+    if (task.parentId) {
+      this._taskHistory.recordSubtaskRemoved(task.parentId, task.id, task.title);
+    }
     this._store.dispatch(TaskSharedActions.deleteTask({ task }));
   }
 
@@ -516,8 +521,11 @@ export class TaskService {
 
     const entities = this._taskEntities();
     const task = entities[id];
+    const fieldsToApply = task
+      ? this._taskHistory.enrichUpdateChanges(task, changedFields)
+      : changedFields;
     const projectMoveSubTaskIds =
-      Object.prototype.hasOwnProperty.call(changedFields, 'projectId') &&
+      Object.prototype.hasOwnProperty.call(fieldsToApply, 'projectId') &&
       task &&
       !task.parentId
         ? unique([
@@ -533,7 +541,7 @@ export class TaskService {
 
     this._store.dispatch(
       TaskSharedActions.updateTask({
-        task: { id, changes: changedFields },
+        task: { id, changes: fieldsToApply },
         ...(projectMoveSubTaskIds !== undefined && { projectMoveSubTaskIds }),
       }),
     );
@@ -822,6 +830,7 @@ export class TaskService {
         parentId,
       }),
     );
+    this._taskHistory.recordSubtaskAdded(parentId, task.id, task.title);
 
     if (!task.title?.trim().length) {
       this.focusTaskById(task.id, true);
@@ -1534,6 +1543,22 @@ export class TaskService {
         workContextType === WorkContextType.PROJECT
           ? workContextId
           : this._globalConfigService.cfg()?.tasks?.defaultProjectId || INBOX_PROJECT.id;
+    }
+
+    // Seed an origin history milestone when the task is created with a title.
+    if (
+      typeof d1.title === 'string' &&
+      d1.title.trim() &&
+      !(d1.revisions && d1.revisions.length)
+    ) {
+      d1.revisions = [
+        {
+          id: nanoid(),
+          created: d1.created,
+          kind: 'created',
+          title: d1.title.trim(),
+        },
+      ];
     }
 
     // Validate that we have a valid task before returning

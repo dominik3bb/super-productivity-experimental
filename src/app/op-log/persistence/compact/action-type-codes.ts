@@ -212,6 +212,7 @@ export const ACTION_TYPE_TO_CODE: Record<ActionType, string> = {
   [ActionType.ATTACHMENT_ADD]: 'XA',
   [ActionType.ATTACHMENT_UPDATE]: 'XU',
   [ActionType.ATTACHMENT_DELETE]: 'XD',
+  [ActionType.TASK_HISTORY_ADD]: 'XH',
 
   // System-level actions (Y)
   [ActionType.LOAD_ALL_DATA]: 'YL',

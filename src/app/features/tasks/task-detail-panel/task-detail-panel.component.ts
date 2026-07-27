@@ -94,6 +94,8 @@ import {
 } from '../add-subtask-input/add-subtask-input.component';
 import { findNextTaskAfterSubtree } from '../../../util/find-adjacent-focusable';
 import { TaskContextMenuComponent } from '../task-context-menu/task-context-menu.component';
+import { TaskHistoryPanelComponent } from '../task-history/task-history-panel/task-history-panel.component';
+import { buildTaskHistoryTimeline } from '../task-history/task-history.util';
 
 @Component({
   selector: 'task-detail-panel',
@@ -129,6 +131,7 @@ import { TaskContextMenuComponent } from '../task-context-menu/task-context-menu
     IssueIconPipe,
     AddSubtaskInputComponent,
     TaskContextMenuComponent,
+    TaskHistoryPanelComponent,
   ],
 })
 export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -384,6 +387,10 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
   hasAttachments = computed(() => {
     return this.issueAttachments().length > 0 || this.localAttachments().length > 0;
   });
+
+  hasHistory = computed(() => this.historyCount() > 0);
+
+  historyCount = computed(() => buildTaskHistoryTimeline(this.task()).length);
 
   totalAttachments = computed(() => {
     return this.issueAttachments().length + this.localAttachments().length;

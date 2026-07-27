@@ -380,6 +380,25 @@
       </div>
     }
   </div>
+
+  @if (hasHistory()) {
+    <task-detail-item
+      (collapseParent)="collapseParent()"
+      (keyPress)="onItemKeyPress($event)"
+      [expanded]="false"
+      [type]="'panel'"
+    >
+      <ng-container panel-header>
+        <mat-icon class="panel-header-icon">history</mat-icon>
+        <span>{{
+          T.F.TASK.ADDITIONAL_INFO.HISTORY | translate: { nr: historyCount() }
+        }}</span>
+      </ng-container>
+      <ng-container panel-content>
+        <task-history-panel [task]="task()"></task-history-panel>
+      </ng-container>
+    </task-detail-item>
+  }
 </div>
 
 @if (panelState.isDragOver()) {

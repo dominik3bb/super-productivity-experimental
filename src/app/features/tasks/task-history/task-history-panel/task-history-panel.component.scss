@@ -1,0 +1,129 @@
+:host {
+  display: block;
+}
+
+.history-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-milestone {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s);
+  min-width: 0;
+}
+
+.rail {
+  position: relative;
+  flex: 0 0 var(--s2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-top: 11px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  box-shadow: 0 0 0 2px var(--bg-lighter, var(--card-bg, var(--bg)));
+
+  &.is-open {
+    background: transparent;
+    border: 2px solid var(--c-primary);
+    box-sizing: border-box;
+  }
+}
+
+.line {
+  flex: 1 1 auto;
+  width: 2px;
+  min-height: var(--s);
+  margin: var(--s-quarter) 0 0;
+  background: var(--c-primary);
+  opacity: 0.45;
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-bottom: var(--s);
+}
+
+.history-milestone:last-child .body {
+  padding-bottom: var(--s-half);
+}
+
+.history-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s);
+  width: 100%;
+  padding: var(--s-half) 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &.is-static {
+    cursor: default;
+  }
+
+  &:not(.is-static):hover {
+    background: var(--c-dark-05);
+  }
+}
+
+.history-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.history-time {
+  flex-shrink: 0;
+  opacity: 0.65;
+  font-size: 12px;
+  line-height: 1.35;
+  padding-top: 1px;
+}
+
+.expand-icon {
+  flex-shrink: 0;
+  opacity: 0.55;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-top: -1px;
+}
+
+.notes-preview,
+.title-preview {
+  margin: 0 0 var(--s-half);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  opacity: 0.8;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.title-preview.muted {
+  opacity: 0.75;
+}
+
+.history-preview {
+  padding: 0 0 var(--s-half);
+}
+
+.restore-btn {
+  margin: 0;
+  padding-left: 0;
+}

@@ -196,6 +196,9 @@ export enum ActionType {
   ATTACHMENT_UPDATE = '[TaskAttachment] Update TaskAttachment',
   ATTACHMENT_DELETE = '[TaskAttachment] Delete TaskAttachment',
 
+  // TaskHistory actions (nested on TASK like attachments)
+  TASK_HISTORY_ADD = '[TaskHistory] Add TaskRevision',
+
   // System-level actions (Y)
   LOAD_ALL_DATA = '[SP_ALL] Load(import) all data',
   LOAD_BACKUP_DATA = '[SP_ALL] Load(import) backup file',

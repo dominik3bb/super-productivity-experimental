@@ -1,6 +1,7 @@
 import { IssueProviderKey } from '../issue/issue.model';
 import { EntityState } from '@ngrx/entity';
 import { TaskAttachment } from './task-attachment/task-attachment.model';
+import { TaskRevision } from './task-history/task-history.model';
 // Import the unified Task type from plugin-api
 import { Task as PluginTask } from '@super-productivity/plugin-api';
 
@@ -131,6 +132,12 @@ export interface TaskCopy
   /** Reminder timestamp for the deadline. */
   deadlineRemindAt?: number | null;
   attachments: TaskAttachment[];
+  /**
+   * Capped newest-first version history (discussion #6620). Optional so existing
+   * installs load without a schema bump; mutated via TASK Update ops (same
+   * pattern as attachments).
+   */
+  revisions?: TaskRevision[];
   reminderId?: string | null;
 
   // Ensure type compatibility for internal fields
