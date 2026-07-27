@@ -203,6 +203,16 @@ describe('WorkViewComponent', () => {
       expect(setSelectedId).not.toHaveBeenCalled();
     });
 
+    it('keeps the selection for a deeply nested grandchild in undoneTasks', async () => {
+      await createComponent({
+        undone: [buildTask('root', [buildTask('child', [buildTask('grandchild')])])],
+      });
+      selectedTaskId.set('grandchild');
+      TestBed.flushEffects();
+
+      expect(setSelectedId).not.toHaveBeenCalled();
+    });
+
     it('deselects when the customizer filters the selected undone task out', async () => {
       isCustomized.set(true);
       customized$.next({ list: [buildTask('visible-1')] });

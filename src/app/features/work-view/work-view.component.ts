@@ -35,7 +35,7 @@ import {
   timer,
   zip,
 } from 'rxjs';
-import { TaskWithSubTasks } from '../tasks/task.model';
+import { Task, TaskWithSubTasks } from '../tasks/task.model';
 import { delay, filter, map, observeOn, startWith, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { fadeAnimation } from '../../ui/animations/fade.ani';
@@ -725,7 +725,7 @@ export class WorkViewComponent implements OnInit, OnDestroy {
   }
 
   private _hasTaskInList(
-    taskList: TaskWithSubTasks[] | null | undefined,
+    taskList: readonly Task[] | null | undefined,
     taskId: string,
   ): boolean {
     if (!taskList || !taskList.length) {
@@ -741,13 +741,11 @@ export class WorkViewComponent implements OnInit, OnDestroy {
         return true;
       }
 
-      const subTasks = task.subTasks;
-      if (Array.isArray(subTasks) && subTasks.length) {
-        for (const subTask of subTasks) {
-          if (subTask && subTask.id === taskId) {
-            return true;
-          }
-        }
+      // Hydrated lists attach nested TaskWithSubTasks under subTasks; plain Task
+      // entities do not. Walk whatever is present so grandchildren+ stay selected.
+      const nested = 'subTasks' in task ? (task as TaskWithSubTasks).subTasks : undefined;
+      if (this._hasTaskInList(nested, taskId)) {
+        return true;
       }
     }
 
