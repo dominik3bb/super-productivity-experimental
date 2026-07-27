@@ -352,7 +352,7 @@ describe('sectionSharedMetaReducer', () => {
     expect(mockReducer.calls.mostRecent().args[0]).toBe(state);
   });
 
-  it('keeps section membership when the target parent is itself a subtask', () => {
+  it('removes a task from sections when converted under a nested parent', () => {
     const state = stateWith(
       {
         grandparent: { subTaskIds: ['parentSub'] },
@@ -379,7 +379,10 @@ describe('sectionSharedMetaReducer', () => {
       }),
     );
 
-    expect(mockReducer.calls.mostRecent().args[0]).toBe(state);
+    const updated = (mockReducer.calls.mostRecent().args[0] as any)[
+      SECTION_FEATURE_NAME
+    ] as SectionState;
+    expect(updated.entities['s1']?.taskIds).toEqual([]);
   });
 
   it('passes through unrelated actions unchanged', () => {

@@ -29,6 +29,7 @@ import { appStateFeatureKey } from '../../app-state/app-state.reducer';
 import { getDbDateStr } from '../../../util/get-db-date-str';
 import { moveItemAfterAnchor } from '../../../features/work-context/store/work-context-meta.helper';
 import { canApplyConvertToSubTask } from '../../../features/tasks/util/can-convert-task-to-sub-task';
+import { wouldCreateTaskHierarchyCycle } from '../../../features/tasks/util/task-hierarchy.util';
 import {
   ActionHandlerMap,
   addTaskToList,
@@ -272,7 +273,16 @@ const handleConvertToSubTask = (
   // The `!task || !targetParent` checks also narrow the types below; the full
   // eligibility rule (incl. self-target and not-a-subtask) lives in the shared
   // guard so the section meta-reducer stays in lock-step.
-  if (!task || !targetParent || !canApplyConvertToSubTask(task, targetParent)) {
+  if (
+    !task ||
+    !targetParent ||
+    !canApplyConvertToSubTask(task, targetParent) ||
+    wouldCreateTaskHierarchyCycle(
+      taskId,
+      targetParentId,
+      state[TASK_FEATURE_NAME].entities,
+    )
+  ) {
     return state;
   }
 

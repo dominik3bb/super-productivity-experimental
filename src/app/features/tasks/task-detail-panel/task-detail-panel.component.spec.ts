@@ -611,7 +611,7 @@ describe('TaskDetailPanelComponent add sub-task', () => {
     expect(addSubTaskToSpy).not.toHaveBeenCalled();
   });
 
-  it('creates a sibling directly when adding a subtask from a subtask panel', () => {
+  it('shows the inline subtask input for a nested task panel', () => {
     const subFixture = TestBed.createComponent(TaskDetailPanelComponent);
     const subComponent = subFixture.componentInstance;
     subFixture.componentRef.setInput('task', {
@@ -624,8 +624,9 @@ describe('TaskDetailPanelComponent add sub-task', () => {
 
     subComponent.addSubTask();
 
-    expect(addSubTaskToSpy).toHaveBeenCalledWith('P');
-    expect(subComponent.isAddSubtaskInputVisible()).toBe(false);
+    expect(addSubTaskToSpy).not.toHaveBeenCalled();
+    expect(subComponent.isAddSubtaskInputVisible()).toBe(true);
+    expect(subComponent.isSubTasksExpanded()).toBe(true);
   });
 
   it('hides the input again when it is closed', () => {

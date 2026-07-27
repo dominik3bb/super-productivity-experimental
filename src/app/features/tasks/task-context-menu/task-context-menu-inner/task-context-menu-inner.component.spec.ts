@@ -373,7 +373,7 @@ describe('TaskContextMenuInnerComponent', () => {
   });
 
   describe('addSubTask()', () => {
-    it('requests the inline subtask input for the parent task', () => {
+    it('requests the inline subtask input for the focused task', () => {
       component.task = {
         id: 'SUB_ID',
         title: 'Subtask',
@@ -384,7 +384,7 @@ describe('TaskContextMenuInnerComponent', () => {
 
       component.addSubTask();
 
-      expect(addSubtaskInputService.requestOpen).toHaveBeenCalledWith('PARENT_ID');
+      expect(addSubtaskInputService.requestOpen).toHaveBeenCalledWith('SUB_ID');
     });
   });
 

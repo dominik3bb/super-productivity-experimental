@@ -39,11 +39,14 @@ export const mapSubTasksToTask = (
   if (!task) {
     return null;
   }
-  const subTasks: Task[] = [];
+  const subTasks: TaskWithSubTasks[] = [];
   for (const id of task.subTaskIds) {
     const subTask = s.entities[id];
     if (subTask) {
-      subTasks.push(subTask);
+      const mapped = mapSubTasksToTask(subTask, s);
+      if (mapped) {
+        subTasks.push(mapped);
+      }
     } else {
       devError('Task data not found for ' + id);
     }
@@ -55,18 +58,19 @@ export const mapSubTasksToTask = (
 };
 
 export const flattenTasks = (tasksIN: TaskWithSubTasks[]): TaskWithSubTasks[] => {
-  let flatTasks: TaskWithSubTasks[] = [];
-  tasksIN.forEach((task) => {
+  const flatTasks: TaskWithSubTasks[] = [];
+  const walk = (task: TaskWithSubTasks): void => {
     if (!task) {
       return;
     }
     flatTasks.push(task);
-    if (task.subTasks && task.subTasks.length > 0) {
-      // NOTE: in order for the model to be identical we add an empty subTasks array
-      const validSubTasks = task.subTasks.filter((t) => t !== null && t !== undefined);
-      flatTasks = flatTasks.concat(validSubTasks.map((t) => ({ ...t, subTasks: [] })));
+    if (task.subTasks?.length) {
+      for (const subTask of task.subTasks) {
+        walk({ ...subTask, subTasks: [] });
+      }
     }
-  });
+  };
+  tasksIN.forEach(walk);
   return flatTasks;
 };
 
@@ -334,14 +338,39 @@ const createStableTaskIdMapper = <T extends Task = Task>(): ((
 // LIVE entities, reusing the exact previous TaskWithSubTasks object for any parent
 // whose entity ref AND resolved subtask refs are unchanged (SPAP-19 per-id cache).
 // Missing subtask entities are skipped (parity with legacy mapSubTasksToTasks /
-// subtasksByParentId shaping).
+// subtasksByParentId shaping). Subtasks are hydrated recursively so arbitrary
+// nesting depth renders in the task list.
+const hydrateTaskWithSubTasksRecursively = (
+  task: Task,
+  entities: Record<string, Task | undefined>,
+  cache: Map<
+    string,
+    { task: Task; subTasks: TaskWithSubTasks[]; result: TaskWithSubTasks }
+  >,
+): TaskWithSubTasks => {
+  const subTasks: TaskWithSubTasks[] = [];
+  for (const sid of task.subTaskIds) {
+    const sub = entities[sid];
+    if (sub) {
+      subTasks.push(hydrateTaskWithSubTasksRecursively(sub, entities, cache));
+    }
+  }
+  const cached = cache.get(task.id);
+  if (cached && cached.task === task && fastArrayCompare(cached.subTasks, subTasks)) {
+    return cached.result;
+  }
+  const built = { ...task, subTasks };
+  cache.set(task.id, { task, subTasks, result: built });
+  return built;
+};
+
 const createStableWithSubTasksMapper = (): ((
   structure: readonly SnapshotStructureEntry[],
   entities: Record<string, Task | undefined>,
 ) => TaskWithSubTasks[]) => {
   const cache = new Map<
     string,
-    { task: Task; subTasks: Task[]; result: TaskWithSubTasks }
+    { task: Task; subTasks: TaskWithSubTasks[]; result: TaskWithSubTasks }
   >();
   let prevResult: TaskWithSubTasks[] = [];
   return (
@@ -359,21 +388,7 @@ const createStableWithSubTasksMapper = (): ((
         continue;
       }
       seen.add(entry.id);
-      const subTasks: Task[] = [];
-      for (const sid of entry.subTaskIds) {
-        const sub = entities[sid];
-        if (sub) {
-          subTasks.push(sub);
-        }
-      }
-      const cached = cache.get(entry.id);
-      let built: TaskWithSubTasks;
-      if (cached && cached.task === task && fastArrayCompare(cached.subTasks, subTasks)) {
-        built = cached.result;
-      } else {
-        built = { ...task, subTasks };
-        cache.set(entry.id, { task, subTasks, result: built });
-      }
+      const built = hydrateTaskWithSubTasksRecursively(task, entities, cache);
       result.push(built);
       if (!changed && prevResult[i] !== built) {
         changed = true;
@@ -781,7 +796,7 @@ export const selectTasksWithSubTasksByIdsFactory = (
   // every other task returns its identical previous `TaskWithSubTasks` object.
   const cache = new Map<
     string,
-    { task: Task; subTasks: Task[]; result: TaskWithSubTasks }
+    { task: Task; subTasks: TaskWithSubTasks[]; result: TaskWithSubTasks }
   >();
   return createSelector(
     selectTaskFeatureState,
@@ -795,32 +810,7 @@ export const selectTasksWithSubTasksByIdsFactory = (
           continue;
         }
         seen.add(id);
-
-        // Resolve current subtask entities (same shaping as mapSubTasksToTask).
-        const subTasks: Task[] = [];
-        for (const subTaskId of task.subTaskIds) {
-          const subTask = state.entities[subTaskId];
-          if (subTask) {
-            subTasks.push(subTask);
-          } else {
-            devError('Task data not found for ' + subTaskId);
-          }
-        }
-
-        const cached = cache.get(id);
-        if (
-          cached &&
-          cached.task === task &&
-          cached.subTasks.length === subTasks.length &&
-          cached.subTasks.every((st, i) => st === subTasks[i])
-        ) {
-          // Nothing referentially changed → reuse the exact previous object.
-          result.push(cached.result);
-        } else {
-          const built: TaskWithSubTasks = { ...task, subTasks };
-          cache.set(id, { task, subTasks, result: built });
-          result.push(built);
-        }
+        result.push(hydrateTaskWithSubTasksRecursively(task, state.entities, cache));
       }
       // Prune entries for ids no longer requested so the cache can't grow
       // unbounded if the id-set is ever mutated in place.

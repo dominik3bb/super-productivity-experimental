@@ -29,8 +29,16 @@ export const reCalcTimesForParentIfParent = (
   parentId: string,
   state: TaskState,
 ): TaskState => {
-  const stateWithTimeEstimate = reCalcTimeEstimateForParentIfParent(parentId, state);
-  return reCalcTimeSpentForParentIfParent(parentId, stateWithTimeEstimate);
+  let currentState = state;
+  let currentParentId: string | undefined = parentId;
+
+  while (currentParentId) {
+    currentState = reCalcTimeEstimateForParentIfParent(currentParentId, currentState);
+    currentState = reCalcTimeSpentForParentIfParent(currentParentId, currentState);
+    currentParentId = currentState.entities[currentParentId]?.parentId ?? undefined;
+  }
+
+  return currentState;
 };
 
 export const reCalcTimeSpentForParentIfParent = (
@@ -179,58 +187,6 @@ export const updateStartDateForRepeatableTask = (
   }
 };
 
-/**
- * Incrementally updates parent's timeSpentOnDay based on delta from subtask change.
- * Much faster than full recalculation when only one day changed.
- */
-const updateParentTimeSpentIncremental = (
-  parentId: string,
-  oldTimeSpentOnDay: TimeSpentOnDay | undefined,
-  newTimeSpentOnDay: TimeSpentOnDay,
-  state: TaskState,
-): TaskState => {
-  const parent = state.entities[parentId];
-  if (!parent) return state;
-
-  // Find what days changed and by how much
-  const allDays = new Set([
-    ...Object.keys(oldTimeSpentOnDay || {}),
-    ...Object.keys(newTimeSpentOnDay),
-  ]);
-
-  let totalDelta = 0;
-  const parentTimeSpentOnDay = { ...parent.timeSpentOnDay };
-
-  for (const day of allDays) {
-    const oldVal = oldTimeSpentOnDay?.[day] || 0;
-    const newVal = newTimeSpentOnDay[day] || 0;
-    const delta = newVal - oldVal;
-
-    if (delta !== 0) {
-      totalDelta += delta;
-      const currentParentVal = parentTimeSpentOnDay[day] || 0;
-      const newParentVal = currentParentVal + delta;
-
-      if (newParentVal > 0) {
-        parentTimeSpentOnDay[day] = newParentVal;
-      } else {
-        delete parentTimeSpentOnDay[day];
-      }
-    }
-  }
-
-  return taskAdapter.updateOne(
-    {
-      id: parentId,
-      changes: {
-        timeSpentOnDay: parentTimeSpentOnDay,
-        timeSpent: parent.timeSpent + totalDelta,
-      },
-    },
-    state,
-  );
-};
-
 export const updateTimeSpentForTask = (
   id: string,
   newTimeSpentOnDay: TimeSpentOnDay,
@@ -241,10 +197,10 @@ export const updateTimeSpentForTask = (
   }
 
   const task = getTaskById(id, state);
-  const oldTimeSpentOnDay = task.timeSpentOnDay;
   const timeSpent = calcTotalTimeSpent(newTimeSpentOnDay);
 
-  const stateAfterUpdate = taskAdapter.updateOne(
+  // Bubble incremental time-spent changes up through every ancestor.
+  let stateAfterUpdate = taskAdapter.updateOne(
     {
       id,
       changes: {
@@ -255,15 +211,16 @@ export const updateTimeSpentForTask = (
     state,
   );
 
-  // Use incremental update for parent instead of full recalculation
-  return task.parentId
-    ? updateParentTimeSpentIncremental(
-        task.parentId,
-        oldTimeSpentOnDay,
-        newTimeSpentOnDay,
-        stateAfterUpdate,
-      )
-    : stateAfterUpdate;
+  let currentParentId = task.parentId;
+  while (currentParentId) {
+    stateAfterUpdate = reCalcTimeSpentForParentIfParent(
+      currentParentId,
+      stateAfterUpdate,
+    );
+    currentParentId = stateAfterUpdate.entities[currentParentId]?.parentId ?? undefined;
+  }
+
+  return stateAfterUpdate;
 };
 
 export const updateTimeEstimateForTask = (
@@ -273,7 +230,7 @@ export const updateTimeEstimateForTask = (
 ): TaskState => {
   if (typeof newEstimate === 'number' || 'isDone' in upd.changes) {
     const task = getTaskById(upd.id as string, state);
-    const stateAfterUpdate =
+    let stateAfterUpdate =
       typeof newEstimate === 'number'
         ? taskAdapter.updateOne(
             {
@@ -285,9 +242,18 @@ export const updateTimeEstimateForTask = (
             state,
           )
         : state;
-    return task.parentId
-      ? reCalcTimeEstimateForParentIfParent(task.parentId, stateAfterUpdate, upd)
-      : stateAfterUpdate;
+
+    let currentParentId = task.parentId;
+    while (currentParentId) {
+      stateAfterUpdate = reCalcTimeEstimateForParentIfParent(
+        currentParentId,
+        stateAfterUpdate,
+        upd,
+      );
+      currentParentId = stateAfterUpdate.entities[currentParentId]?.parentId ?? undefined;
+    }
+
+    return stateAfterUpdate;
   }
   return state;
 };

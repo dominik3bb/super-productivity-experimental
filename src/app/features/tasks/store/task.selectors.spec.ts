@@ -1,5 +1,5 @@
 import * as fromSelectors from './task.selectors';
-import { DEFAULT_TASK, Task, TaskState } from '../task.model';
+import { DEFAULT_TASK, Task, TaskState, TaskWithSubTasks } from '../task.model';
 import { TASK_FEATURE_NAME } from './task.reducer';
 import { taskAdapter } from './task.adapter';
 import { TODAY_TAG } from '../../tag/tag.const';
@@ -1229,8 +1229,8 @@ describe('Task Selectors', () => {
         const r2 = sel(wrap(makeTaskState([p, s2])));
 
         expect(r2[0]).not.toBe(r1[0]); // parent rebuilt
-        expect(r2[0].subTasks[0]).toBe(s2); // reflects the changed subtask entity
         expect(r2[0].subTasks[0].timeSpent).toBe(500);
+        expect((r2[0].subTasks[0] as TaskWithSubTasks).subTasks).toEqual([]);
       });
 
       it('keeps two concurrent factory instances independent (no cross-eviction)', () => {
@@ -1278,6 +1278,17 @@ describe('Task Selectors', () => {
         );
         expect(res.length).toBe(1);
         expect(res[0].id).toBe('A');
+      });
+
+      it('hydrates nested subtasks recursively (grandchildren)', () => {
+        const p = makeTask('P', { subTaskIds: ['S'] });
+        const s = makeTask('S', { parentId: 'P', subTaskIds: ['GS'] });
+        const gs = makeTask('GS', { parentId: 'S' });
+        const sel = fromSelectors.selectTasksWithSubTasksByIdsFactory(['P']);
+        const res = sel(wrap(makeTaskState([p, s, gs])));
+
+        expect(res[0].subTasks[0].id).toBe('S');
+        expect((res[0].subTasks[0] as TaskWithSubTasks).subTasks[0].id).toBe('GS');
       });
 
       // Documents WHY the factory is needed: the legacy module-level props-selector

@@ -435,15 +435,6 @@ export class LocalRestApiHandlerService {
         );
       }
 
-      if (parent.parentId) {
-        return createErrorResponse(
-          requestId,
-          400,
-          'INVALID_PARENT',
-          'Cannot nest subtasks: parent task is itself a subtask',
-        );
-      }
-
       const subTaskId = this._taskService.addSubTaskTo(body.parentId, {
         title,
         ...additionalFields,

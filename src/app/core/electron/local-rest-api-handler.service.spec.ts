@@ -613,10 +613,14 @@ describe('LocalRestApiHandlerService', () => {
           expect(taskServiceMock.addSubTaskTo).not.toHaveBeenCalled();
         });
 
-        it('should return 400 when parentId refers to a task that is itself a subtask', async () => {
+        it('should create a subtask when parentId refers to a nested parent task', async () => {
           const nestedParent = createMockTask('parent-1', { parentId: 'grandparent' });
+          const newSubTask = createMockTask('new-subtask-id', {
+            parentId: 'parent-1',
+          });
           Object.defineProperty(taskServiceMock, 'getByIdOnce$', {
-            get: () => (_id: string) => of(nestedParent),
+            get: () => (id: string) =>
+              of(id === 'new-subtask-id' ? newSubTask : nestedParent),
           });
 
           const response = await sendRequestAndWait(
@@ -625,10 +629,11 @@ describe('LocalRestApiHandlerService', () => {
             }),
           );
 
-          expect(response.body.ok).toBe(false);
-          expect(response.status).toBe(400);
-          expect((response.body as any).error.code).toBe('INVALID_PARENT');
-          expect(taskServiceMock.addSubTaskTo).not.toHaveBeenCalled();
+          expect(response.body.ok).toBe(true);
+          expect(response.status).toBe(201);
+          expect(taskServiceMock.addSubTaskTo).toHaveBeenCalledOnceWith('parent-1', {
+            title: 'Child',
+          });
         });
 
         it('should return 400 when parentId is not a string', async () => {

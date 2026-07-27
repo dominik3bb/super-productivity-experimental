@@ -910,14 +910,39 @@ describe('taskSharedCrudMetaReducer', () => {
       });
     });
 
-    it('should not convert under a target parent that is itself a subtask', () => {
-      // Nesting under a subtask would create a third level the UI cannot render
-      // (orphaning the task) and leave the grandparent's time aggregation stale.
+    it('should convert under a nested parent task', () => {
+      const grandparent = createMockTask({
+        id: 'grandparent',
+        subTaskIds: ['parent-task'],
+      });
       const testState = createConvertToSubTaskState({}, { parentId: 'grandparent' });
+      const stateWithGrandparent = {
+        ...testState,
+        [TASK_FEATURE_NAME]: {
+          ...testState[TASK_FEATURE_NAME],
+          ids: ['grandparent', 'parent-task', 'task1'],
+          entities: {
+            ...testState[TASK_FEATURE_NAME].entities,
+            grandparent,
+          },
+        },
+      };
       const action = createConvertToSubTaskAction();
 
-      metaReducer(testState, action);
-      expect(mockReducer).toHaveBeenCalledWith(testState, action);
+      metaReducer(stateWithGrandparent, action);
+      expectStateUpdate(
+        {
+          ...expectTaskUpdate('task1', {
+            parentId: 'parent-task',
+            projectId: 'project1',
+            tagIds: [],
+          }),
+          ...expectTaskUpdate('parent-task', { subTaskIds: ['task1'] }),
+        },
+        action,
+        mockReducer,
+        stateWithGrandparent,
+      );
     });
 
     it('should not convert a task onto itself', () => {

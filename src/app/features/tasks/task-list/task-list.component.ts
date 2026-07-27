@@ -383,9 +383,8 @@ export class TaskListComponent implements OnDestroy, AfterViewInit {
       return { listModelId, isOverRow: isLeadingPad };
     }
     // Leading-strip fallback: the `.sub-tasks` wrapper extends visually above
-    // the cdkDropList element. Each wrapper holds exactly one SUB list (the
-    // two-level nesting cap is enforced by `canApplyConvertToSubTask`), so
-    // the descendant query is unambiguous.
+    // the cdkDropList element. Each wrapper holds exactly one SUB list, so the
+    // descendant query is unambiguous.
     const wrapper = element.closest<HTMLElement>('.sub-tasks');
     if (wrapper) {
       const subListEl = wrapper.querySelector<HTMLElement>(

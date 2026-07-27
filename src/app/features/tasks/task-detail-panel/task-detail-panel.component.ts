@@ -377,10 +377,7 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
   });
 
   // Template helper computed signals
-  isShowSubTasksPanel = computed(() => {
-    const task = this.task();
-    return task && !task.parentId;
-  });
+  isShowSubTasksPanel = computed(() => !!this.task());
 
   showTimeEstimate = computed(() => !this.task().subTasks?.length);
 
@@ -669,15 +666,6 @@ export class TaskDetailPanelComponent implements OnInit, AfterViewInit, OnDestro
 
   addSubTask(): void {
     const task = this.task();
-    // The sub-task section (and thus the inline input) only renders for a
-    // top-level task. On a subtask's own panel "add subtask" means "add a
-    // sibling under my parent" — there is no section to host the input, so
-    // create it directly (matches the pre-inline-draft behaviour).
-    if (task.parentId) {
-      this.taskService.addSubTaskTo(task.parentId);
-      return;
-    }
-
     if (task._hideSubTasksMode === HideSubTasksMode.HideAll) {
       this.taskService.showSubTasks(task.id);
     }

@@ -79,9 +79,9 @@ describe('canApplyConvertToSubTask', () => {
     ).toBe(false);
   });
 
-  it('rejects nesting under a task that is itself a subtask', () => {
+  it('accepts nesting under a nested parent task', () => {
     expect(canApplyConvertToSubTask(task, { id: 'p1', parentId: 'grandparent' })).toBe(
-      false,
+      true,
     );
   });
 

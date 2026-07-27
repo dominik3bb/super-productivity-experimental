@@ -29,9 +29,9 @@ export const canConvertTaskToSubTask = (task: ConvertibleTaskFields): boolean =>
  * looked-up) task and target parent. Used by BOTH the section and crud
  * meta-reducers so their guards stay in lock-step — if they diverge, one
  * reducer can strip the task from its section while the other leaves it
- * top-level. Rejects a missing target, self-nesting, and nesting under a task
- * that is itself a subtask (the UI renders only two levels, so deeper nesting
- * would orphan the task and leave parent time aggregation stale).
+ * top-level. Rejects a missing target and self-nesting. Cycle detection
+ * (ancestor → descendant) is enforced separately where full entity state is
+ * available — see `wouldCreateTaskHierarchyCycle`.
  */
 export const canApplyConvertToSubTask = (
   task: (ConvertibleTaskFields & Pick<Task, 'id'>) | undefined,
@@ -40,5 +40,4 @@ export const canApplyConvertToSubTask = (
   !!task &&
   !!targetParent &&
   task.id !== targetParent.id &&
-  !targetParent.parentId &&
   canConvertTaskToSubTask(task);
