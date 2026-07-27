@@ -262,7 +262,7 @@ describe('TaskComponent shortcut handling', () => {
     expect(taskServiceSpy.remove).not.toHaveBeenCalled();
   });
 
-  it('opens the parent draft input on Mod+Enter when editing a subtask', () => {
+  it('opens a child draft input on Mod+Enter when editing a subtask', () => {
     fixture.componentRef.setInput('task', createSubTask('Existing subtask'));
 
     component.updateTaskTitleIfChanged({
@@ -271,7 +271,7 @@ describe('TaskComponent shortcut handling', () => {
       submitTrigger: 'modEnter',
     });
 
-    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('parent-1');
+    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('sub-1');
     expect(taskServiceSpy.addSubTaskTo).not.toHaveBeenCalled();
   });
 
@@ -288,7 +288,7 @@ describe('TaskComponent shortcut handling', () => {
     expect(taskServiceSpy.addSubTaskTo).not.toHaveBeenCalled();
   });
 
-  it('persists the typed title before opening a sibling draft input on Mod+Enter', () => {
+  it('persists the typed title before opening a child draft input on Mod+Enter', () => {
     fixture.componentRef.setInput('task', createSubTask(''));
 
     component.updateTaskTitleIfChanged({
@@ -300,7 +300,7 @@ describe('TaskComponent shortcut handling', () => {
     expect(taskServiceSpy.update).toHaveBeenCalledWith('sub-1', {
       title: 'New subtask',
     });
-    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('parent-1');
+    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('sub-1');
     expect(taskServiceSpy.addSubTaskTo).not.toHaveBeenCalled();
   });
 
@@ -407,7 +407,7 @@ describe('TaskComponent shortcut handling', () => {
 
     component.addSubTask();
 
-    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('parent-1');
+    expect(addSubtaskInputServiceSpy.requestOpen).toHaveBeenCalledWith('sub-1');
     expect(taskServiceSpy.addSubTaskTo).not.toHaveBeenCalled();
   });
 

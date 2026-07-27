@@ -347,12 +347,14 @@ const hydrateTaskWithSubTasksRecursively = (
     string,
     { task: Task; subTasks: TaskWithSubTasks[]; result: TaskWithSubTasks }
   >,
+  seen: Set<string>,
 ): TaskWithSubTasks => {
+  seen.add(task.id);
   const subTasks: TaskWithSubTasks[] = [];
   for (const sid of task.subTaskIds) {
     const sub = entities[sid];
     if (sub) {
-      subTasks.push(hydrateTaskWithSubTasksRecursively(sub, entities, cache));
+      subTasks.push(hydrateTaskWithSubTasksRecursively(sub, entities, cache, seen));
     }
   }
   const cached = cache.get(task.id);
@@ -387,8 +389,7 @@ const createStableWithSubTasksMapper = (): ((
         changed = true;
         continue;
       }
-      seen.add(entry.id);
-      const built = hydrateTaskWithSubTasksRecursively(task, entities, cache);
+      const built = hydrateTaskWithSubTasksRecursively(task, entities, cache, seen);
       result.push(built);
       if (!changed && prevResult[i] !== built) {
         changed = true;
@@ -810,7 +811,9 @@ export const selectTasksWithSubTasksByIdsFactory = (
           continue;
         }
         seen.add(id);
-        result.push(hydrateTaskWithSubTasksRecursively(task, state.entities, cache));
+        result.push(
+          hydrateTaskWithSubTasksRecursively(task, state.entities, cache, seen),
+        );
       }
       // Prune entries for ids no longer requested so the cache can't grow
       // unbounded if the id-set is ever mutated in place.

@@ -391,8 +391,20 @@ describe('TaskService', () => {
       service.update('task-1', { title: 'Updated Title' });
 
       expect(store.dispatch).toHaveBeenCalledWith(
-        TaskSharedActions.updateTask({
-          task: { id: 'task-1', changes: { title: 'Updated Title' } },
+        jasmine.objectContaining({
+          type: TaskSharedActions.updateTask.type,
+          task: jasmine.objectContaining({
+            id: 'task-1',
+            changes: jasmine.objectContaining({
+              title: 'Updated Title',
+              revisions: jasmine.arrayContaining([
+                jasmine.objectContaining({
+                  kind: 'title',
+                  title: 'Task task-1',
+                }),
+              ]),
+            }),
+          }),
         }),
       );
     });
@@ -441,15 +453,28 @@ describe('TaskService', () => {
 
       service.update('parent', { projectId: 'project-2', title: 'Moved' });
 
-      const expectedAction = TaskSharedActions.updateTask({
-        task: {
-          id: 'parent',
-          changes: { projectId: 'project-2', title: 'Moved' },
-        },
-        projectMoveSubTaskIds: ['listed-subtask', 'reverse-linked-subtask'],
-      });
-      expect(store.dispatch).toHaveBeenCalledWith(expectedAction);
-      expect(expectedAction.meta.entityIds).toEqual([
+      expect(store.dispatch).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          type: TaskSharedActions.updateTask.type,
+          task: jasmine.objectContaining({
+            id: 'parent',
+            changes: jasmine.objectContaining({
+              projectId: 'project-2',
+              title: 'Moved',
+              revisions: jasmine.arrayContaining([
+                jasmine.objectContaining({
+                  kind: 'title',
+                  title: 'Task parent',
+                }),
+              ]),
+            }),
+          }),
+          projectMoveSubTaskIds: ['listed-subtask', 'reverse-linked-subtask'],
+        }),
+      );
+      const dispatched = (store.dispatch as jasmine.Spy).calls.mostRecent()
+        .args[0] as ReturnType<typeof TaskSharedActions.updateTask>;
+      expect(dispatched.meta.entityIds).toEqual([
         'parent',
         'listed-subtask',
         'reverse-linked-subtask',
