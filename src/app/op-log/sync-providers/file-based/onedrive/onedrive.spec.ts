@@ -17,7 +17,7 @@ describe('OneDrive', () => {
   const baseCfg: OneDrivePrivateCfg = {
     clientId: 'client-id',
     tenantId: 'common',
-    syncFolderPath: 'Super Productivity',
+    syncFolderPath: 'Super Productivity Experimental',
     accessToken: 'access-token',
     refreshToken: 'refresh-token',
     tokenExpiresAt: Date.now() + tokenExpiryMs,

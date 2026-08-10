@@ -247,7 +247,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
       baseUrl: null,
       userName: null,
       password: null,
-      syncFolderPath: 'super-productivity',
+      syncFolderPath: 'super-productivity-experimental',
     },
 
     superSync: {
@@ -269,14 +269,14 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfigState = {
       loginName: null,
       userName: null,
       password: null,
-      syncFolderPath: 'super-productivity',
+      syncFolderPath: 'super-productivity-experimental',
     },
 
     oneDrive: {
       useCustomApp: !HAS_OFFICIAL_ONEDRIVE_CLIENT_ID,
       clientId: OFFICIAL_ONEDRIVE_CLIENT_ID,
       tenantId: 'common',
-      syncFolderPath: 'Super Productivity',
+      syncFolderPath: 'Super Productivity Experimental',
     },
   },
 } as const;

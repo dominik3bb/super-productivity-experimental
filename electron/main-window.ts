@@ -217,7 +217,9 @@ export const createWindow = async ({
     height: mainWindowState.height,
     minHeight: 240,
     minWidth: 300,
-    title: IS_DEV ? 'Super Productivity D' : 'Super Productivity',
+    title: IS_DEV
+      ? 'Super Productivity Experimental D'
+      : 'Super Productivity Experimental',
     titleBarStyle,
     titleBarOverlay,
     enableLargerThanScreen: isScreenshotMode,
@@ -327,7 +329,7 @@ export const createWindow = async ({
   mainWin.loadURL(url).then(() => {
     // Set window title for dev mode
     if (IS_DEV) {
-      mainWin.setTitle('Super Productivity D');
+      mainWin.setTitle('Super Productivity Experimental D');
     }
 
     // load custom stylesheet if any
@@ -579,11 +581,11 @@ function createMenu(quitApp: () => void): void {
   // Create application menu to enable copy & pasting on MacOS
   const menuTpl: MenuItemConstructorOptions[] = [
     {
-      label: 'Super Productivity',
+      label: 'Super Productivity Experimental',
       submenu: [
-        { role: 'about', label: 'About Super Productivity' },
+        { role: 'about', label: 'About Super Productivity Experimental' },
         { type: 'separator' },
-        { role: 'hide', label: 'Hide Super Productivity' },
+        { role: 'hide', label: 'Hide Super Productivity Experimental' },
         { role: 'hideOthers' },
         { role: 'unhide' },
         { type: 'separator' },

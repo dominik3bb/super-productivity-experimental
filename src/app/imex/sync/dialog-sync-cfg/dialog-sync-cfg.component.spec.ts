@@ -954,7 +954,7 @@ describe('DialogSyncCfgComponent', () => {
     const storedCfg = {
       clientId: 'cid',
       tenantId: 'common',
-      syncFolderPath: 'Super Productivity',
+      syncFolderPath: 'Super Productivity Experimental',
       accessToken: 'at',
       refreshToken: 'rt',
       tokenExpiresAt: 1,

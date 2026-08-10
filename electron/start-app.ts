@@ -26,7 +26,10 @@ import { evaluateGpuStartupGuard } from './gpu-startup-guard';
 import * as fs from 'fs';
 
 const ICONS_FOLDER = __dirname + '/assets/icons/';
-const APP_DISPLAY_NAME = 'Super Productivity';
+// Fork display name. package.json `name` (superProductivityExperimental) still
+// drives Electron's userData path (%APPDATA% / ~/.config), keeping Store/Flatpak
+// and stock desktop builds on separate folders.
+const APP_DISPLAY_NAME = 'Super Productivity Experimental';
 const IS_MAC = process.platform === 'darwin';
 // const DESKTOP_ENV = process.env.DESKTOP_SESSION;
 // const IS_GNOME = DESKTOP_ENV === 'gnome' || DESKTOP_ENV === 'gnome-xorg';

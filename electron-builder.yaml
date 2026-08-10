@@ -1,5 +1,5 @@
-appId: superProductivity
-productName: Super Productivity
+appId: com.dominik.superProductivityExperimental
+productName: Super Productivity Experimental
 artifactName: ${name}-${arch}.${ext}
 
 files:
@@ -79,13 +79,13 @@ appx:
 
 linux:
   # Fix for issue #5259: Set executable name without spaces for snap compatibility
-  executableName: superproductivity
+  executableName: superproductivity-experimental
   category: Office;ProjectManagement
   mimeTypes:
-    - x-scheme-handler/superproductivity
+    - x-scheme-handler/superproductivity-experimental
   desktop:
     entry:
-      StartupWMClass: superproductivity
+      StartupWMClass: superproductivity-experimental
   target:
     - AppImage
     - deb
